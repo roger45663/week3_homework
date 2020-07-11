@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>WEEK 3 Homework</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css"
+        />
+        <link rel="stylesheet" href="/css/style.min.css" />
+    </head>
+    <body>
+        <div class="jumbotron jumbotron-fluid">
+            <div class="container">
+                <h1 class="display-4">COFFEE IN 後臺管理系統</h1>
+            </div>
+        </div>
+        <main id="app">
+            <div class="container">
+                <div class="text-right mb-3">
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        data-toggle="modal"
+                        data-target="#addProductModal"
+                    >
+                        新增產品
+                    </button>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">商品圖</th>
+                            <th scope="col">分類</th>
+                            <th scope="col">產品名稱</th>
+                            <th scope="col">原價</th>
+                            <th scope="col">售價</th>
+                            <th scope="col">是否使用</th>
+                            <th scope="col">編輯</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, key) in products" :key="item.id">
+                            <td>
+                                <div class="img-wrapper">
+                                    <img :src="item.img" :alt="item.category" />
+                                </div>
+                            </td>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.title }}</td>
+                            <td>{{ item.orginalPrice }}</td>
+                            <td>{{ item.sellingPrice }}</td>
+                            <td>
+                                <i
+                                    class="fas fa-check text-success"
+                                    :class="{'d-none': !item.enabled}"
+                                ></i>
+                                <i
+                                    class="fas fa-times text-danger"
+                                    :class="{'d-none': item.enabled}"
+                                ></i>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary"
+                                        data-toggle="modal"
+                                        data-target="#editProductModal"
+                                        @click="getProductData(item.id)"
+                                    >
+                                        編輯
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger"
+                                        data-toggle="modal"
+                                        data-target="#confirmDeleteModal"
+                                        @click="getProductData(item.id)"
+                                    >
+                                        刪除
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 新增商品Modal -->
+            <div
+                class="modal fade"
+                id="addProductModal"
+                data-backdrop="static"
+                data-keyboard="false"
+                tabindex="-1"
+                role="dialog"
+                aria-labelledby="staticBackdropLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                新增產品
+                            </h5>
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close"
+                            >
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label>
+                                        <p class="form-title">輸入圖片網址</p>
+                                        <input
+                                            type="text"
+                                            name=""
+                                            id="imgUrl"
+                                            class="form-control"
+                                            v-model="cacheProduct.img"
+                                        />
+                                    </label>
+                                    <div class="img-render">
+                                        <img
+                                            :src="cacheProduct.img"
+                                            alt="product image"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="w-100">
+                                        <p class="form-title">標題</p>
+                                        <input
+                                            type="text"
+                                            name=""
+                                            id="title"
+                                            class="form-control"
+                                            v-model="cacheProduct.title"
+                                        />
+                                    </label>
+                                    <div class="form-row">
+                                        <label class="col">
+                                            <p class="form-title">分類</p>
+                                            <select
+                                                name=""
+                                                id="product-category"
+                                                class="form-control"
+                                                v-model="cacheProduct.category"
+                                            >
+                                                <option
+                                                    value=""
+                                                    disabled
+                                                    selected
+                                                    >請選擇</option
+                                                >
+                                                <option value="咖啡豆"
+                                                    >咖啡豆</option
+                                                >
+                                                <option value="咖啡壺"
+                                                    >咖啡壺</option
+                                                >
+                                                <option value="耗材"
+                                                    >耗材</option
+                                                >
+                                            </select>
+                                        </label>
+                                        <label class="col">
+                                            <p class="form-title">單位</p>
+                                            <input
+                                                type="text"
+                                                name=""
+                                                id="product-unit"
+                                                class="form-control"
+                                                v-model="cacheProduct.unit"
+                                            />
+                                        </label>
+                                    </div>
+                                    <div class="form-row">
+                                        <label class="col">
+                                            <p class="form-title">原價</p>
+                                            <input
+                                                type="number"
+                                                name=""
+                                                id="original-price"
+                                                class="form-control"
+                                                v-model="cacheProduct.orginalPrice"
+                                            />
+                                        </label>
+                                        <label class="col">
+                                            <p class="form-title">售價</p>
+                                            <input
+                                                type="number"
+                                                name=""
+                                                id="selling-price"
+                                                class="form-control"
+                                                v-model="cacheProduct.sellingPrice"
+                                            />
+                                        </label>
+                                    </div>
+                                    <label class="w-100">
+                                        <p class="form-title">產品描述</p>
+                                        <textarea
+                                            name=""
+                                            id="product-intro"
+                                            class="form-control"
+                                            placeholder="請輸入..."
+                                            v-model="cacheProduct.intro"
+                                        ></textarea>
+                                    </label>
+                                    <label class="w-100">
+                                        <p class="form-title">說明內容</p>
+                                        <textarea
+                                            name=""
+                                            id="product-content"
+                                            class="form-control"
+                                            placeholder="請輸入..."
+                                            v-model="cacheProduct.info"
+                                        ></textarea>
+                                    </label>
+                                    <div class="form-check">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            value=""
+                                            id="post"
+                                            v-model="cacheProduct.enabled"
+                                        />
+                                        <label
+                                            class="form-check-label"
+                                            for="post"
+                                        >
+                                            是否啟用
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-dismiss="modal"
+                            >
+                                取消
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                @click="addProduct"
+                                data-dismiss="modal"
+                            >
+                                確認
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 編輯商品Modal -->
+            <div
+                class="modal fade"
+                id="editProductModal"
+                data-backdrop="static"
+                data-keyboard="false"
+                tabindex="-1"
+                role="dialog"
+                aria-labelledby="staticBackdropLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                編輯產品
+                            </h5>
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close"
+                            >
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label>
+                                        <p class="form-title">輸入圖片網址</p>
+                                        <input
+                                            type="text"
+                                            name=""
+                                            id="imgUrl"
+                                            class="form-control"
+                                            v-model="cacheProduct.img"
+                                        />
+                                    </label>
+                                    <div class="img-render">
+                                        <img
+                                            :src="cacheProduct.img"
+                                            alt="product image"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="w-100">
+                                        <p class="form-title">標題</p>
+                                        <input
+                                            type="text"
+                                            name=""
+                                            id="title"
+                                            class="form-control"
+                                            v-model="cacheProduct.title"
+                                        />
+                                    </label>
+                                    <div class="form-row">
+                                        <label class="col">
+                                            <p class="form-title">分類</p>
+                                            <select
+                                                name=""
+                                                id="product-category"
+                                                class="form-control"
+                                                v-model="cacheProduct.category"
+                                            >
+                                                <option
+                                                    value=""
+                                                    disabled
+                                                    selected
+                                                    >請選擇</option
+                                                >
+                                                <option value="咖啡豆"
+                                                    >咖啡豆</option
+                                                >
+                                                <option value="咖啡壺"
+                                                    >咖啡壺</option
+                                                >
+                                                <option value="耗材"
+                                                    >耗材</option
+                                                >
+                                            </select>
+                                        </label>
+                                        <label class="col">
+                                            <p class="form-title">單位</p>
+                                            <input
+                                                type="text"
+                                                name=""
+                                                id="product-unit"
+                                                class="form-control"
+                                                v-model="cacheProduct.unit"
+                                            />
+                                        </label>
+                                    </div>
+                                    <div class="form-row">
+                                        <label class="col">
+                                            <p class="form-title">原價</p>
+                                            <input
+                                                type="number"
+                                                name=""
+                                                id="original-price"
+                                                class="form-control"
+                                                v-model="cacheProduct.orginalPrice"
+                                            />
+                                        </label>
+                                        <label class="col">
+                                            <p class="form-title">售價</p>
+                                            <input
+                                                type="number"
+                                                name=""
+                                                id="selling-price"
+                                                class="form-control"
+                                                v-model="cacheProduct.sellingPrice"
+                                            />
+                                        </label>
+                                    </div>
+                                    <label class="w-100">
+                                        <p class="form-title">產品描述</p>
+                                        <textarea
+                                            name=""
+                                            id="product-intro"
+                                            class="form-control"
+                                            placeholder="請輸入..."
+                                            v-model="cacheProduct.intro"
+                                        ></textarea>
+                                    </label>
+                                    <label class="w-100">
+                                        <p class="form-title">說明內容</p>
+                                        <textarea
+                                            name=""
+                                            id="product-content"
+                                            class="form-control"
+                                            placeholder="請輸入..."
+                                            v-model="cacheProduct.info"
+                                        ></textarea>
+                                    </label>
+                                    <div class="form-check">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            value=""
+                                            id="post"
+                                            v-model="cacheProduct.enabled"
+                                        />
+                                        <label
+                                            class="form-check-label"
+                                            for="post"
+                                        >
+                                            是否啟用
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-dismiss="modal"
+                            >
+                                取消
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                @click="editProduct(cacheProduct.id)"
+                                data-dismiss="modal"
+                            >
+                                確認
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 確認刪除商品Modal -->
+            <div
+                class="modal fade"
+                id="confirmDeleteModal"
+                data-backdrop="static"
+                data-keyboard="false"
+                tabindex="-1"
+                role="dialog"
+                aria-labelledby="staticBackdropLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                刪除產品確認
+                            </h5>
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close"
+                            >
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>
+                                是否刪除<span class="text-danger"
+                                    >{{ cacheProduct.title }}</span
+                                >
+                            </p>
+                        </div>
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-dismiss="modal"
+                            >
+                                取消
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-danger"
+                                @click="deleteProduct(cacheProduct.id)"
+                                data-dismiss="modal"
+                            >
+                                確認
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.js"></script>
+        <script src="/js/app.js"></script>
+    </body>
+</html>
