@@ -47,7 +47,7 @@ const app = new Vue({
             }
         },
         getProductData(id) {
-            this.cacheProduct = this.products.filter(item => item.id === id)[0];
+            this.cacheProduct = Object.assign({}, this.products.filter(item => item.id === id)[0]);
         },
         editProduct(id) {
             let index = this.products.findIndex(item => item.id === id);
